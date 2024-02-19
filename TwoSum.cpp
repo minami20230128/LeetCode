@@ -1,28 +1,21 @@
-#include <iostream>
-#include <vector>
-
-int main()
+class Solution
 {
-    std::vector<int> nums;
-    int target;
-    std::vector<int> results;
-    for(auto&& first : nums)
+    public:
+    std::vector<int> twoSum(std::vector<int> nums, int target)
     {
-        for(auto&& second : nums)
+        std::vector<int> results;
+        for(int i = 0; i < nums.size(); i++)
         {
-            if(first + second == target)
+            for(int j = nums.size() - 1; j > i; j--)
             {
-                results.push_back(first);
-                results.push_back(second);
-                break;
+                if(nums[i] + nums[j] == target)
+                {
+                    results.push_back(i);
+                    results.push_back(j);
+                    return results;
+                }
             }
         }
+        return results;
     }
-
-    for(auto&& result : results)
-    {
-        std::cout << result << std::endl;
-    }
-
-    return 0;
-}
+};
