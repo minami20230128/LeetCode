@@ -7,7 +7,7 @@ class Solution
         for(int i = 0; i < nums.size(); i++)
         {
             int required = target - nums[i];
-            if(required == target - nums[i])
+            if(hash.find(required) != hash.end())
             {
                 return {i, hash[required]};
             }
