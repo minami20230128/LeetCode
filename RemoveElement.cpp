@@ -8,10 +8,13 @@ public:
         {
             if(nums[i] != val)
             {
+                std::cout << nums[i] << std::endl;
                 output.push_back(std::to_string(nums[i]));
                 without_val++;
             }
         }
+
+        std::remove(nums.begin(), nums.end(), val);
 
         return without_val;
     }
