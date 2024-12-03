@@ -14,8 +14,8 @@ public:
         auto itr = this->pair_idx.begin();
         while(itr != this->pair_idx.end())
         {
-            //std::cout << itr->first << std::endl;
-            //std::cout << itr->second << std::endl;
+            std::cout << itr->first << std::endl;
+            std::cout << itr->second << std::endl;
 
             itr++;
         }
@@ -31,35 +31,74 @@ public:
             std::string ch = std::string({s[i]});
             if(ch == "(" || ch == "{" || ch == "[")
             {
-                auto idx = s.find(this->brackets[ch], i);
+                auto idx = this->find_close(s, pair_idx, ch, i);
                 if(idx == -1) return false;
                 this->pair_idx[i] = idx;
             }
+
+            if(ch == ")" || ch == "}" || ch == "]")
+            {
+                auto it = std::find_if(pair_idx.begin(), pair_idx.end(), [&i](const std::pair<int, int>& pair) {
+                    return pair.second == i;
+                });
+
+                if(it == pair_idx.end())
+                {
+                    return false;
+                }   
+            }
         }
         return true;
+    }
+
+    int find_close(std::string s, std::map<int, int>pair_idx, std::string open, int i)
+    {
+        std::string close = this->brackets[open];
+        while(1)
+        {
+            auto idx = s.find(close, i);
+
+            //既知の閉じ括弧であれば他を探す
+            auto it = std::find_if(pair_idx.begin(), pair_idx.end(), [&idx](const std::pair<int, int>& pair) {
+                return pair.second == idx;
+            });
+            
+            if(it == pair_idx.end())
+            {
+                return idx;
+            }   
+
+            i = idx + 1;
+            if(i > s.size())
+            {
+                return -1;
+            }
+        }
     }
 
     bool check_order()
     {
         auto itr = this->pair_idx.begin();
-        while(itr != this->pair_idx.end()--)
+        while(itr != this->pair_idx.end())
         {
-            auto next_itr = std::next(itr);
-            std::cout << itr->first << std::endl;
-            std::cout << itr->second << std::endl;
-            std::cout << next_itr->first << std::endl;
-            std::cout << next_itr->second << std::endl;
-            if(!(itr->second < next_itr->first) && !(itr->first < next_itr->first && itr->second > next_itr->second))
-            {
-                return false;
-            }
+            int open = itr->first;
+            int close = itr->second;
+
+            //[(])
+            auto it = std::find_if(pair_idx.begin(), pair_idx.end(), [&open, &close](const std::pair<int, int>& pair) {
+                return pair.first < open && pair.second < close && pair.second > open;
+            });
+            if(it != pair_idx.end()) return false;
+
+            //([)]
+            it = std::find_if(pair_idx.begin(), pair_idx.end(), [&open, &close](const std::pair<int, int>& pair) {
+                return pair.first > open && pair.second > close && pair.second < close;
+            });
+            if(it != pair_idx.end()) return false;
+
             itr++;
         }
-
+        
         return true;
     }
 };
-
-//正しい括弧の条件
-//1. 括弧と閉じ括弧が同じ順番である
-//2. 間に閉じていない括弧がない
