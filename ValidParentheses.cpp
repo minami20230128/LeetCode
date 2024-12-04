@@ -9,7 +9,9 @@ public:
 
     std::map<int, int> pair_idx;
     bool isValid(string s) {
-        if(!this->get_indexes(s)) return false;
+        bool tmp = this->get_indexes(s);
+        std::cout << tmp << std::endl;
+        if(!tmp) return false;
 
         auto itr = this->pair_idx.begin();
         while(itr != this->pair_idx.end())
@@ -31,9 +33,32 @@ public:
             std::string ch = std::string({s[i]});
             if(ch == "(" || ch == "{" || ch == "[")
             {
-                auto idx = this->find_close(s, pair_idx, ch, i);
-                if(idx == -1) return false;
-                this->pair_idx[i] = idx;
+                std::cout << i;
+                std::cout << "文字目" << std::endl;
+                std::string close = this->brackets[ch];
+                //std::cout << close << std::endl;
+
+                int nest = this->find_nest(s, ch, close, i);
+                std::cout << nest << std::endl;
+                if(nest == -1) return false;
+
+                int close_idx = this->find_parentheses(s, close, i);
+                for(int i = 0; i < nest; i++)
+                {
+                    close_idx = this->find_parentheses(s, close, close_idx + 1);
+                }
+
+                //std::cout << close_idx << std::endl;
+                this->pair_idx[i] = close_idx;
+
+                auto itr = this->pair_idx.begin();
+                while(itr != this->pair_idx.end())
+                {
+                    //std::cout << itr->first << std::endl;
+                    //std::cout << itr->second << std::endl;
+
+                    itr++;
+                }
             }
 
             if(ch == ")" || ch == "}" || ch == "]")
@@ -51,29 +76,27 @@ public:
         return true;
     }
 
-    int find_close(std::string s, std::map<int, int>pair_idx, std::string open, int i)
+    int find_parentheses(std::string s, std::string ch, int i)
     {
-        std::string close = this->brackets[open];
-        while(1)
+        return s.find(ch, i);
+    }
+
+    int find_nest(std::string s, std::string open, std::string close, int open_idx)
+    {
+        int nest = 0;
+        auto next_close = this->find_parentheses(s, close, open_idx);
+        if(next_close == -1) return -1;
+        auto same_open = this->find_parentheses(s, open, open_idx + 1);
+
+        if(same_open < next_close && same_open != -1)
         {
-            auto idx = s.find(close, i);
-
-            //既知の閉じ括弧であれば他を探す
-            auto it = std::find_if(pair_idx.begin(), pair_idx.end(), [&idx](const std::pair<int, int>& pair) {
-                return pair.second == idx;
-            });
-            
-            if(it == pair_idx.end())
-            {
-                return idx;
-            }   
-
-            i = idx + 1;
-            if(i > s.size())
-            {
-                return -1;
-            }
+            auto next_next_close = this->find_parentheses(s, close, next_close + 1);
+            if(next_next_close == -1) return -1;
+            nest++;
+            this->find_nest(s, open, close, same_open);
         }
+
+        return nest;
     }
 
     bool check_order()
@@ -102,3 +125,9 @@ public:
         return true;
     }
 };
+
+
+//1. (があり、かつ次の)までの間に一つ以上(がある->ネストしているとみなす。
+//2. ネストしていない同種の括弧をすべて探す。
+//3. その外側の括弧を順番に探す。
+
